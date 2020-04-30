@@ -2,6 +2,8 @@
 
 import hashlib
 import sys
+import time
+
 from Basics.Command import run_command
 from Basics.Version import Python_version
 import logging
@@ -103,9 +105,28 @@ class Utils:
         result, out = self.adb(dev, "reboot", logon)
         return result, out
 
+    def tryADB(self ,dev,mode ='adb or shell' ,command = 'null', timeout = 30 ,logon = False):
+        tryNub = 0
+        while True:
+            if mode == 'adb':
+                result , out = self.adb(dev ,command,logon)
+            elif mode == 'shell':
+                result, out = self.adbshell(dev, command, logon)
+            else:
+                logging.error('tryADB mode not is "adb or shell"')
+                sys.exit(-1)
+            if result == 0:
+                return True, out
+            else:
+                tryNub += 1
+                time.sleep(1)
+                if tryNub > timeout:
+                    logging.warning(out)
+                    return False , out
+
     @staticmethod
-    def tryNext(fouc):
+    def tryNext(method):
         for x in range(5):
-            if fouc:
+            if method:
                 return True
         return False
